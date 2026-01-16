@@ -1,817 +1,1403 @@
 <template>
-  <div class="app-container">
-    <!-- 页面头部 -->
-    <div class="header-container">
-      <el-page-header content="动态数据管理系统" class="page-header" />
-    </div>
+	<div class="app-container">
+		<!-- 页面头部 -->
+		<div class="header-container">
+			<div class="header-content">
+				<h1 class="page-title">
+					<i class="icon-title el-icon-s-data"></i>
+					动态数据管理系统
+				</h1>
+				<p class="page-subtitle">灵活配置字段，动态管理数据</p>
+			</div>
+		</div>
 
-    <!-- 业务表标识输入区 -->
-    <el-card class="card-wrapper table-code-card">
-      <el-form-item label="业务表标识" label-width="100px" class="form-item">
-        <el-input
-            v-model="tableCode"
-            placeholder="请输入业务表标识（如：user_data）"
-            class="table-code-input"
-            prefix-icon="el-icon-folder-opened"
-            clearable
-        />
-        <el-button type="primary" @click="getFieldList" class="btn-refresh" icon="el-icon-refresh">
-          加载字段
-        </el-button>
-      </el-form-item>
-    </el-card>
+		<!-- 业务表标识输入区 -->
+		<el-card class="card-wrapper table-code-card" shadow="hover">
+			<div class="card-header">
+				<h3 class="card-title">
+					<i class="icon-card el-icon-s-platform"></i>
+					业务表管理
+				</h3>
+			</div>
+			<el-form-item
+				label="业务表标识"
+				label-width="110px"
+				class="form-item">
+				<div class="table-code-wrapper">
+					<el-input
+						v-model="tableCode"
+						placeholder="请输入业务表标识（如：user_data）"
+						class="table-code-input"
+						size="large">
+						<template #prefix>
+							<i class="el-icon-folder-opened input-icon"></i>
+						</template>
+					</el-input>
+					<el-button
+						type="primary"
+						@click="getFieldList"
+						class="btn-refresh"
+						size="large">
+						<i class="el-icon-refresh"></i>
+						加载字段
+					</el-button>
+				</div>
+				<div class="table-tips">
+					<i class="el-icon-info"></i>
+					输入或修改业务表标识后，点击加载字段进行配置
+				</div>
+			</el-form-item>
+		</el-card>
 
-    <!-- 字段配置区域 -->
-    <el-card title="🔧 字段配置" class="card-wrapper">
-      <el-form :model="fieldForm" inline class="field-form">
-        <el-form-item label="字段名称" label-width="80px" class="form-item">
-          <el-input
-              v-model="fieldForm.name"
-              placeholder="如：用户名、年龄"
-              prefix-icon="el-icon-menu"
-              style="width: 180px"
-              clearable
-              class="form-input"
-          />
-        </el-form-item>
-        <el-form-item label="字段编码" label-width="80px" class="form-item">
-          <el-input
-              v-model="fieldForm.code"
-              placeholder="如：user_name、age"
-              prefix-icon="el-icon-key"
-              style="width: 180px"
-              clearable
-              class="form-input"
-          />
-        </el-form-item>
-        <el-form-item label="字段类型" label-width="80px" class="form-item">
-          <el-select
-              v-model="fieldForm.type"
-              placeholder="选择字段类型"
-              style="width: 180px"
-              prefix-icon="el-icon-s-tools"
-              class="form-select"
-          >
-            <el-option label="字符串(VARCHAR)" value="VARCHAR" />
-            <el-option label="整数(INT)" value="INT" />
-            <el-option label="长整型(BIGINT)" value="BIGINT" />
-            <el-option label="小数(DECIMAL)" value="DECIMAL" />
-            <el-option label="日期(DATE)" value="DATE" />
-            <el-option label="日期时间(DATETIME)" value="DATETIME" />
-            <el-option label="时间戳(TIMESTAMP)" value="TIMESTAMP" />
-            <el-option label="布尔值(BOOLEAN)" value="BOOLEAN" />
-            <el-option label="文本(TEXT)" value="TEXT" />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button
-              type="primary"
-              @click="addField"
-              icon="el-icon-plus"
-              class="btn-add"
-          >
-            添加字段
-          </el-button>
-        </el-form-item>
-      </el-form>
+		<!-- 字段配置区域 -->
+		<el-card class="card-wrapper" shadow="hover">
+			<div class="card-header">
+				<h3 class="card-title">
+					<i class="icon-card el-icon-setting"></i>
+					字段配置
+					<span class="field-count" v-if="fieldList.length > 0">
+						({{ fieldList.length }}个字段)
+					</span>
+				</h3>
+			</div>
 
-      <div class="list-container">
-        <h4 class="list-title">已配置字段</h4>
-        <el-table
-            :data="fieldList"
-            border
-            stripe
-            style="width: 100%"
-            v-loading="fieldLoading"
-            class="data-table"
-        >
-          <el-table-column prop="fieldName" label="字段名称" width="150" />
-          <el-table-column prop="fieldCode" label="字段编码" width="150" />
-          <el-table-column prop="fieldType" label="字段类型" width="150" />
-          <el-table-column prop="createTime" label="创建时间" width="200" />
-          <el-table-column label="操作" width="120" fixed="right">
-            <template #default="scope">
-              <el-button
-                  type="danger"
-                  size="small"
-                  icon="el-icon-delete"
-                  @click="deleteField(scope.row.id)"
-                  class="btn-sm-delete"
-              >
-                删除
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
-    </el-card>
+			<div class="field-add-section">
+				<h4 class="section-title">
+					<i class="el-icon-circle-plus"></i>
+					添加新字段
+				</h4>
+				<el-form :model="fieldForm" inline class="field-form">
+					<div class="form-row">
+						<el-form-item
+							label="字段名称"
+							class="form-item enhanced">
+							<el-input
+								v-model="fieldForm.name"
+								placeholder="如：用户名、年龄"
+								class="form-input-enhanced"
+								size="large">
+								<template #prefix>
+									<i class="el-icon-menu input-icon"></i>
+								</template>
+							</el-input>
+						</el-form-item>
 
-    <!-- 数据管理区域 -->
-    <el-card title="📊 数据管理" class="card-wrapper">
-      <el-form :model="dataForm" inline class="data-form" v-if="fieldList.length > 0">
-        <el-form-item
-            v-for="field in fieldList"
-            :key="field.id"
-            :label="field.fieldName"
-            label-width="80px"
-            class="form-item"
-        >
-          <template v-if="field.fieldType === 'DATE' || field.fieldType === 'DATETIME' || field.fieldType === 'TIMESTAMP'">
-            <el-date-picker
-                v-model="dataForm[field.fieldCode]"
-                :type="field.fieldType === 'DATE' ? 'date' : 'datetime'"
-                placeholder="选择日期/时间"
-                style="width: 200px"
-                clearable
-                class="form-input"
-            />
-          </template>
-          <template v-else-if="field.fieldType === 'INT' || field.fieldType === 'BIGINT'">
-            <el-input
-                v-model="dataForm[field.fieldCode]"
-                type="number"
-                :placeholder="`请输入${field.fieldName}`"
-                style="width: 200px"
-                clearable
-                class="form-input"
-            />
-          </template>
-          <template v-else-if="field.fieldType === 'DECIMAL'">
-            <el-input
-                v-model="dataForm[field.fieldCode]"
-                type="number"
-                step="0.01"
-                :placeholder="`请输入${field.fieldName}`"
-                style="width: 200px"
-                clearable
-                class="form-input"
-            />
-          </template>
-          <template v-else-if="field.fieldType === 'BOOLEAN'">
-            <el-select
-                v-model="dataForm[field.fieldCode]"
-                placeholder="选择布尔值"
-                style="width: 200px"
-                clearable
-                class="form-select"
-            >
-              <el-option label="是" value="true" />
-              <el-option label="否" value="false" />
-            </el-select>
-          </template>
-          <template v-else>
-            <el-input
-                v-model="dataForm[field.fieldCode]"
-                :placeholder="`请输入${field.fieldName}`"
-                prefix-icon="el-icon-edit"
-                style="width: 200px"
-                clearable
-                class="form-input"
-            />
-          </template>
-        </el-form-item>
-        <el-form-item>
-          <el-button
-              type="primary"
-              @click="addData"
-              icon="el-icon-circle-plus"
-              class="btn-add"
-              :disabled="editId !== null"
-          >
-            新增数据
-          </el-button>
-          <el-button
-              type="warning"
-              @click="updateData"
-              icon="el-icon-edit"
-              class="btn-update"
-              style="margin-left: 10px"
-              :disabled="editId === null"
-          >
-            保存修改
-          </el-button>
-          <el-button
-              type="success"
-              @click="getDataList"
-              icon="el-icon-refresh"
-              class="btn-refresh-data"
-              style="margin-left: 10px"
-          >
-            刷新数据
-          </el-button>
-          <el-button
-              type="info"
-              @click="resetForm"
-              icon="el-icon-refresh-left"
-              class="btn-reset"
-              style="margin-left: 10px"
-              :disabled="editId === null"
-          >
-            取消编辑
-          </el-button>
-        </el-form-item>
-      </el-form>
-      <el-empty v-else description="请先加载字段配置" class="empty-container"></el-empty>
+						<el-form-item
+							label="字段编码"
+							class="form-item enhanced">
+							<el-input
+								v-model="fieldForm.code"
+								placeholder="如：user_name、age"
+								class="form-input-enhanced"
+								size="large">
+								<template #prefix>
+									<i class="el-icon-key input-icon"></i>
+								</template>
+							</el-input>
+						</el-form-item>
 
-      <div class="list-container" v-if="fieldList.length > 0">
-        <div class="list-header">
-          <h4 class="list-title">数据列表</h4>
-          <el-button
-              type="primary"
-              icon="el-icon-download"
-              @click="exportToExcel"
-              class="btn-export"
-          >
-            导出Excel
-          </el-button>
-        </div>
-        <el-table
-            :data="dataList"
-            border
-            stripe
-            style="width: 100%"
-            v-loading="dataLoading"
-            class="data-table"
-        >
-          <el-table-column
-              v-for="field in fieldList"
-              :key="field.id"
-              :prop="field.fieldCode"
-              :label="field.fieldName"
-              min-width="120"
-          />
-          <el-table-column label="操作" width="180" fixed="right">
-            <template #default="scope">
-              <el-button
-                  type="text"
-                  icon="el-icon-edit"
-                  @click="editData(scope.row)"
-                  class="btn-edit"
-              >
-                编辑
-              </el-button>
-              <el-button
-                  type="text"
-                  icon="el-icon-delete"
-                  @click="deleteData(scope.row.id)"
-                  class="btn-delete"
-              >
-                删除
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
-    </el-card>
-  </div>
+						<el-form-item
+							label="字段类型"
+							class="form-item enhanced">
+							<el-select
+								v-model="fieldForm.type"
+								placeholder="选择字段类型"
+								class="form-select-enhanced"
+								size="large">
+								<template #prefix>
+									<i class="el-icon-s-tools input-icon"></i>
+								</template>
+								<el-option
+									label="字符串(VARCHAR)"
+									value="VARCHAR" />
+								<el-option label="整数(INT)" value="INT" />
+								<el-option
+									label="长整型(BIGINT)"
+									value="BIGINT" />
+								<el-option
+									label="小数(DECIMAL)"
+									value="DECIMAL" />
+								<el-option label="日期(DATE)" value="DATE" />
+								<el-option
+									label="日期时间(DATETIME)"
+									value="DATETIME" />
+								<el-option
+									label="时间戳(TIMESTAMP)"
+									value="TIMESTAMP" />
+								<el-option
+									label="布尔值(BOOLEAN)"
+									value="BOOLEAN" />
+								<el-option label="文本(TEXT)" value="TEXT" />
+							</el-select>
+						</el-form-item>
+
+						<el-form-item class="form-item enhanced">
+							<el-button
+								type="primary"
+								@click="addField"
+								class="btn-add-enhanced"
+								size="large">
+								<i class="el-icon-plus"></i>
+								添加字段
+							</el-button>
+						</el-form-item>
+					</div>
+				</el-form>
+			</div>
+
+			<div class="list-container" v-if="fieldList.length > 0">
+				<div class="list-header">
+					<h4 class="list-title">
+						<i class="el-icon-tickets"></i>
+						已配置字段列表
+					</h4>
+					<span class="list-subtitle">点击删除可移除字段</span>
+				</div>
+				<el-table
+					:data="fieldList"
+					border
+					style="width: 100%"
+					v-loading="fieldLoading"
+					class="data-table-enhanced"
+					:header-cell-style="{
+						background:
+							'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+						color: 'white',
+						fontWeight: '600',
+						fontSize: '14px',
+					}">
+					<el-table-column
+						prop="fieldName"
+						label="字段名称"
+						width="180">
+						<template #header>
+							<span class="column-header">
+								<i class="el-icon-tickets"></i>
+								字段名称
+							</span>
+						</template>
+					</el-table-column>
+					<el-table-column
+						prop="fieldCode"
+						label="字段编码"
+						width="180">
+						<template #header>
+							<span class="column-header">
+								<i class="el-icon-key"></i>
+								字段编码
+							</span>
+						</template>
+					</el-table-column>
+					<el-table-column
+						prop="fieldType"
+						label="字段类型"
+						width="150">
+						<template #header>
+							<span class="column-header">
+								<i class="el-icon-s-tools"></i>
+								字段类型
+							</span>
+						</template>
+						<template #default="scope">
+							<el-tag
+								:type="getFieldTypeTag(scope.row.fieldType)">
+								{{ scope.row.fieldType }}
+							</el-tag>
+						</template>
+					</el-table-column>
+					<el-table-column
+						prop="createTime"
+						label="创建时间"
+						width="200">
+						<template #header>
+							<span class="column-header">
+								<i class="el-icon-time"></i>
+								创建时间
+							</span>
+						</template>
+					</el-table-column>
+					<el-table-column label="操作" width="120" fixed="right">
+						<template #header>
+							<span class="column-header">
+								<i class="el-icon-setting"></i>
+								操作
+							</span>
+						</template>
+						<template #default="scope">
+							<el-button
+								type="danger"
+								size="small"
+								@click="deleteField(scope.row.id)"
+								class="btn-sm-delete-enhanced">
+								<i class="el-icon-delete"></i>
+								删除
+							</el-button>
+						</template>
+					</el-table-column>
+				</el-table>
+			</div>
+
+			<div class="empty-state" v-else>
+				<el-empty description="暂无字段配置" class="empty-container">
+					<template #image>
+						<i class="el-icon-document-copy empty-icon"></i>
+					</template>
+					<p class="empty-tip">请先添加字段或加载已有配置</p>
+				</el-empty>
+			</div>
+		</el-card>
+
+		<!-- 数据管理区域 -->
+		<el-card class="card-wrapper" shadow="hover">
+			<div class="card-header">
+				<h3 class="card-title">
+					<i class="icon-card el-icon-s-data"></i>
+					数据管理
+					<span class="field-count" v-if="dataList.length > 0">
+						({{ dataList.length }}条记录)
+					</span>
+				</h3>
+			</div>
+
+			<div v-if="fieldList.length > 0">
+				<div class="data-form-section">
+					<h4 class="section-title">
+						<i class="el-icon-edit"></i>
+						{{ editId ? '编辑数据' : '添加新数据' }}
+					</h4>
+					<el-form
+						:model="dataForm"
+						inline
+						class="data-form-enhanced">
+						<div class="form-grid">
+							<div
+								class="form-grid-item"
+								v-for="field in fieldList"
+								:key="field.id">
+								<div class="field-label">
+									<span class="label-text">{{
+										field.fieldName
+									}}</span>
+									<span
+										v-if="field.isRequired === 1"
+										class="required-mark"
+										>*</span
+									>
+								</div>
+								<div class="field-control">
+									<template
+										v-if="
+											field.fieldType === 'DATE' ||
+											field.fieldType === 'DATETIME' ||
+											field.fieldType === 'TIMESTAMP'
+										">
+										<el-date-picker
+											v-model="dataForm[field.fieldCode]"
+											:type="
+												field.fieldType === 'DATE'
+													? 'date'
+													: 'datetime'
+											"
+											placeholder="选择日期/时间"
+											class="form-control-enhanced"
+											:clearable="true" />
+									</template>
+									<template
+										v-else-if="
+											field.fieldType === 'INT' ||
+											field.fieldType === 'BIGINT'
+										">
+										<el-input
+											v-model="dataForm[field.fieldCode]"
+											type="number"
+											:placeholder="`请输入${field.fieldName}`"
+											class="form-control-enhanced"
+											:clearable="true" />
+									</template>
+									<template
+										v-else-if="
+											field.fieldType === 'DECIMAL'
+										">
+										<el-input
+											v-model="dataForm[field.fieldCode]"
+											type="number"
+											step="0.01"
+											:placeholder="`请输入${field.fieldName}`"
+											class="form-control-enhanced"
+											:clearable="true" />
+									</template>
+									<template
+										v-else-if="
+											field.fieldType === 'BOOLEAN'
+										">
+										<el-select
+											v-model="dataForm[field.fieldCode]"
+											placeholder="选择布尔值"
+											class="form-control-enhanced"
+											:clearable="true">
+											<el-option
+												label="是"
+												value="true" />
+											<el-option
+												label="否"
+												value="false" />
+										</el-select>
+									</template>
+									<template v-else>
+										<el-input
+											v-model="dataForm[field.fieldCode]"
+											:placeholder="`请输入${field.fieldName}`"
+											class="form-control-enhanced"
+											:clearable="true">
+											<template #prefix>
+												<i
+													class="el-icon-edit input-icon"></i>
+											</template>
+										</el-input>
+									</template>
+								</div>
+							</div>
+						</div>
+
+						<div class="form-actions">
+							<el-button
+								type="primary"
+								@click="addData"
+								class="btn-action-primary"
+								:disabled="editId !== null">
+								<i class="el-icon-circle-plus"></i>
+								新增数据
+							</el-button>
+							<el-button
+								type="warning"
+								@click="updateData"
+								class="btn-action-warning"
+								:disabled="editId === null">
+								<i class="el-icon-check"></i>
+								保存修改
+							</el-button>
+							<el-button
+								type="success"
+								@click="getDataList"
+								class="btn-action-success">
+								<i class="el-icon-refresh"></i>
+								刷新数据
+							</el-button>
+							<el-button
+								type="info"
+								@click="resetForm"
+								class="btn-action-info"
+								:disabled="editId === null">
+								<i class="el-icon-refresh-left"></i>
+								取消编辑
+							</el-button>
+						</div>
+					</el-form>
+				</div>
+
+				<div class="list-container">
+					<div class="list-header">
+						<div class="list-header-left">
+							<h4 class="list-title">
+								<i class="el-icon-s-order"></i>
+								数据列表
+							</h4>
+							<span class="list-subtitle"
+								>支持编辑和删除操作</span
+							>
+						</div>
+						<div class="list-header-right">
+							<el-button
+								type="primary"
+								@click="exportToExcel"
+								class="btn-export-enhanced">
+								<i class="el-icon-download"></i>
+								导出Excel
+							</el-button>
+						</div>
+					</div>
+					<el-table
+						:data="dataList"
+						border
+						style="width: 100%"
+						v-loading="dataLoading"
+						class="data-table-enhanced"
+						:row-class-name="tableRowClassName"
+						:header-cell-style="{
+							background:
+								'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+							color: 'white',
+							fontWeight: '600',
+							fontSize: '14px',
+						}">
+						<el-table-column
+							v-for="field in fieldList"
+							:key="field.id"
+							:prop="field.fieldCode"
+							:label="field.fieldName"
+							min-width="150">
+							<template #default="scope">
+								<span class="cell-content">
+									{{
+										formatCellValue(
+											scope.row[field.fieldCode],
+											field.fieldType
+										)
+									}}
+								</span>
+							</template>
+						</el-table-column>
+						<el-table-column label="操作" width="180" fixed="right">
+							<template #header>
+								<span class="column-header">
+									<i class="el-icon-setting"></i>
+									操作
+								</span>
+							</template>
+							<template #default="scope">
+								<el-button
+									type="warning"
+									@click="editData(scope.row)"
+									class="btn-action-edit"
+									size="small">
+									<i class="el-icon-edit"></i>
+									编辑
+								</el-button>
+								<el-button
+									type="danger"
+									@click="deleteData(scope.row.id)"
+									class="btn-action-delete"
+									size="small">
+									<i class="el-icon-delete"></i>
+									删除
+								</el-button>
+							</template>
+						</el-table-column>
+					</el-table>
+
+					<div class="table-footer" v-if="dataList.length > 0">
+						<div class="summary-info">
+							共
+							<span class="highlight">{{ dataList.length }}</span>
+							条记录
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="empty-state" v-else>
+				<el-empty description="请先配置字段" class="empty-container">
+					<template #image>
+						<i class="el-icon-s-data empty-icon"></i>
+					</template>
+					<p class="empty-tip">配置字段后即可管理数据</p>
+				</el-empty>
+			</div>
+		</el-card>
+
+		<div class="footer-tips">
+			<i class="el-icon-info"></i>
+			提示：所有操作都会实时同步到数据库，请谨慎操作
+		</div>
+	</div>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
-import { getCurrentInstance } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ref, reactive } from 'vue';
+import { getCurrentInstance } from 'vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
 // 导入Excel导出相关库
-import * as XLSX from 'xlsx'
-import { saveAs } from 'file-saver'
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 // 获取全局axios
-const { proxy } = getCurrentInstance()
+const { proxy } = getCurrentInstance();
 
 // 核心变量
-const tableCode = ref('user_data') // 默认填充user_data，减少输入
-const fieldList = ref([])
-const dataList = ref([])
-const fieldLoading = ref(false)
-const dataLoading = ref(false)
-const editId = ref(null) // 当前编辑的数据ID
+const tableCode = ref('user_data'); // 默认填充user_data，减少输入
+const fieldList = ref([]);
+const dataList = ref([]);
+const fieldLoading = ref(false);
+const dataLoading = ref(false);
+const editId = ref(null); // 当前编辑的数据ID
 
 // 字段表单数据
 const fieldForm = reactive({
-  name: '',
-  code: '',
-  type: 'VARCHAR' // 默认值：字符串
-})
+	name: '',
+	code: '',
+	type: 'VARCHAR', // 默认值：字符串
+});
 
 // 数据表单数据（动态绑定字段值）
-const dataForm = reactive({})
+const dataForm = reactive({});
 
 // 1. 添加字段
 const addField = async () => {
-  if (!tableCode.value.trim()) {
-    ElMessage.warning('请输入业务表标识')
-    return
-  }
-  if (!fieldForm.name || !fieldForm.code) {
-    ElMessage.warning('请输入字段名称和编码')
-    return
-  }
-  fieldLoading.value = true
-  try {
-    const res = await proxy.$axios.post('/field/add', {
-      tableCode: tableCode.value.trim(),
-      fieldName: fieldForm.name,
-      fieldCode: fieldForm.code,
-      fieldType: fieldForm.type,
-      isRequired: '1',
-      sortNum: fieldList.value.length + 1
-    })
-    if (res.data.success) {
-      ElMessage.success('字段添加成功 ✨')
-      getFieldList() // 刷新字段
-      // 清空输入
-      fieldForm.name = ''
-      fieldForm.code = ''
-      fieldForm.type = 'VARCHAR' // 重置为默认类型
-    } else {
-      ElMessage.error(`添加失败：${res.data.msg}`)
-    }
-  } catch (err) {
-    ElMessage.error(`添加失败：${err.response?.data?.msg || err.message}`)
-  } finally {
-    fieldLoading.value = false
-  }
-}
+	if (!tableCode.value.trim()) {
+		ElMessage.warning('请输入业务表标识');
+		return;
+	}
+	if (!fieldForm.name || !fieldForm.code) {
+		ElMessage.warning('请输入字段名称和编码');
+		return;
+	}
+	fieldLoading.value = true;
+	try {
+		const res = await proxy.$axios.post('/field/add', {
+			tableCode: tableCode.value.trim(),
+			fieldName: fieldForm.name,
+			fieldCode: fieldForm.code,
+			fieldType: fieldForm.type,
+			isRequired: '1',
+			sortNum: fieldList.value.length + 1,
+		});
+		if (res.data.success) {
+			ElMessage.success('字段添加成功 ✨');
+			getFieldList(); // 刷新字段
+			// 清空输入
+			fieldForm.name = '';
+			fieldForm.code = '';
+			fieldForm.type = 'VARCHAR'; // 重置为默认类型
+		} else {
+			ElMessage.error(`添加失败：${res.data.msg}`);
+		}
+	} catch (err) {
+		ElMessage.error(`添加失败：${err.response?.data?.msg || err.message}`);
+	} finally {
+		fieldLoading.value = false;
+	}
+};
 
 // 2. 加载字段列表
 const getFieldList = async () => {
-  const currentTableCode = tableCode.value.trim()
-  if (!currentTableCode) {
-    ElMessage.warning('请输入业务表标识')
-    return
-  }
-  fieldLoading.value = true
-  try {
-    const res = await proxy.$axios.get('/field/list', {
-      params: { tableCode: currentTableCode }
-    })
-    if (res.data.success) {
-      fieldList.value = res.data.data || []
-      ElMessage.success(`字段加载成功 📝（共${fieldList.value.length}个字段）`)
-      // 加载字段后自动加载数据
-      getDataList()
-    } else {
-      ElMessage.error(`加载失败：${res.data.msg}`)
-    }
-  } catch (err) {
-    ElMessage.error(`加载失败：${err.response?.data?.msg || err.message}`)
-  } finally {
-    fieldLoading.value = false
-  }
-}
+	const currentTableCode = tableCode.value.trim();
+	if (!currentTableCode) {
+		ElMessage.warning('请输入业务表标识');
+		return;
+	}
+	fieldLoading.value = true;
+	try {
+		const res = await proxy.$axios.get('/field/list', {
+			params: { tableCode: currentTableCode },
+		});
+		if (res.data.success) {
+			fieldList.value = res.data.data || [];
+			ElMessage.success(
+				`字段加载成功 📝（共${fieldList.value.length}个字段）`
+			);
+			// 加载字段后自动加载数据
+			getDataList();
+		} else {
+			ElMessage.error(`加载失败：${res.data.msg}`);
+		}
+	} catch (err) {
+		ElMessage.error(`加载失败：${err.response?.data?.msg || err.message}`);
+	} finally {
+		fieldLoading.value = false;
+	}
+};
 
 // 3. 删除字段
 const deleteField = async (fieldId) => {
-  if (!fieldId) return
-  try {
-    // 二次确认
-    await ElMessageBox.confirm(
-        '确定删除该字段？删除后关联的数据也会被清除！',
-        '删除字段确认',
-        {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }
-    )
-    const res = await proxy.$axios.delete(`/field/delete/${fieldId}`)
-    if (res.data.success) {
-      ElMessage.success('字段删除成功 🗑️')
-      getFieldList() // 刷新字段列表
-    } else {
-      ElMessage.error(`删除失败：${res.data.msg}`)
-    }
-  } catch (err) {
-    if (err !== 'cancel') {
-      ElMessage.error(`删除失败：${err.response?.data?.msg || err.message}`)
-    } else {
-      ElMessage.info('已取消删除')
-    }
-  }
-}
+	if (!fieldId) return;
+	try {
+		// 二次确认
+		await ElMessageBox.confirm(
+			'确定删除该字段？删除后关联的数据也会被清除！',
+			'删除字段确认',
+			{
+				confirmButtonText: '确定',
+				cancelButtonText: '取消',
+				type: 'warning',
+			}
+		);
+		const res = await proxy.$axios.delete(`/field/delete/${fieldId}`);
+		if (res.data.success) {
+			ElMessage.success('字段删除成功 🗑️');
+			getFieldList(); // 刷新字段列表
+		} else {
+			ElMessage.error(`删除失败：${res.data.msg}`);
+		}
+	} catch (err) {
+		if (err !== 'cancel') {
+			ElMessage.error(
+				`删除失败：${err.response?.data?.msg || err.message}`
+			);
+		} else {
+			ElMessage.info('已取消删除');
+		}
+	}
+};
 
 // 4. 新增数据
 const addData = async () => {
-  const currentTableCode = tableCode.value.trim()
-  if (!currentTableCode) {
-    ElMessage.warning('请输入业务表标识')
-    return
-  }
-  if (fieldList.value.length === 0) {
-    ElMessage.warning('请先加载字段配置')
-    return
-  }
-  // 校验必填字段
-  let isEmpty = false
-  fieldList.value.forEach(field => {
-    if (field.isRequired === 1 && !dataForm[field.fieldCode]) {
-      ElMessage.warning(`${field.fieldName}为必填项`)
-      isEmpty = true
-    }
-  })
-  if (isEmpty) return
+	const currentTableCode = tableCode.value.trim();
+	if (!currentTableCode) {
+		ElMessage.warning('请输入业务表标识');
+		return;
+	}
+	if (fieldList.value.length === 0) {
+		ElMessage.warning('请先加载字段配置');
+		return;
+	}
+	// 校验必填字段
+	let isEmpty = false;
+	fieldList.value.forEach((field) => {
+		if (field.isRequired === 1 && !dataForm[field.fieldCode]) {
+			ElMessage.warning(`${field.fieldName}为必填项`);
+			isEmpty = true;
+		}
+	});
+	if (isEmpty) return;
 
-  dataLoading.value = true
-  try {
-    const res = await proxy.$axios.post('/data/add', {
-      tableCode: currentTableCode,
-      fieldValues: { ...dataForm }
-    })
-    if (res.data.success) {
-      ElMessage.success('数据添加成功 🎉')
-      getDataList() // 刷新数据
-      // 清空输入
-      resetForm()
-    } else {
-      ElMessage.error(`新增失败：${res.data.msg}`)
-    }
-  } catch (err) {
-    ElMessage.error(`新增失败：${err.response?.data?.msg || err.message}`)
-  } finally {
-    dataLoading.value = false
-  }
-}
+	dataLoading.value = true;
+	try {
+		const res = await proxy.$axios.post('/data/add', {
+			tableCode: currentTableCode,
+			fieldValues: { ...dataForm },
+		});
+		if (res.data.success) {
+			ElMessage.success('数据添加成功 🎉');
+			getDataList(); // 刷新数据
+			// 清空输入
+			resetForm();
+		} else {
+			ElMessage.error(`新增失败：${res.data.msg}`);
+		}
+	} catch (err) {
+		ElMessage.error(`新增失败：${err.response?.data?.msg || err.message}`);
+	} finally {
+		dataLoading.value = false;
+	}
+};
 
 // 5. 加载数据列表
 const getDataList = async () => {
-  const currentTableCode = tableCode.value.trim()
-  if (!currentTableCode) {
-    ElMessage.warning('请输入业务表标识')
-    return
-  }
-  dataLoading.value = true
-  try {
-    const res = await proxy.$axios.get('/data/list', {
-      params: { tableCode: currentTableCode }
-    })
-    if (res.data.success) {
-      dataList.value = res.data.data || []
-      ElMessage.success(`数据加载成功 📊（共${dataList.value.length}条数据）`)
-    } else {
-      ElMessage.error(`加载失败：${res.data.msg}`)
-    }
-  } catch (err) {
-    ElMessage.error(`加载失败：${err.response?.data?.msg || err.message}`)
-  } finally {
-    dataLoading.value = false
-  }
-}
+	const currentTableCode = tableCode.value.trim();
+	if (!currentTableCode) {
+		ElMessage.warning('请输入业务表标识');
+		return;
+	}
+	dataLoading.value = true;
+	try {
+		const res = await proxy.$axios.get('/data/list', {
+			params: { tableCode: currentTableCode },
+		});
+		if (res.data.success) {
+			dataList.value = res.data.data || [];
+			ElMessage.success(
+				`数据加载成功 📊（共${dataList.value.length}条数据）`
+			);
+		} else {
+			ElMessage.error(`加载失败：${res.data.msg}`);
+		}
+	} catch (err) {
+		ElMessage.error(`加载失败：${err.response?.data?.msg || err.message}`);
+	} finally {
+		dataLoading.value = false;
+	}
+};
 
 // 6. 删除数据
 const deleteData = async (id) => {
-  if (!id) return
-  try {
-    await ElMessageBox.confirm(
-        '确定删除该条数据？删除后不可恢复！',
-        '删除确认',
-        {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }
-    )
-    const res = await proxy.$axios.delete(`/data/delete/${id}`)
-    if (res.data.success) {
-      ElMessage.success('数据删除成功 🗑️')
-      getDataList() // 刷新数据
-    } else {
-      ElMessage.error(`删除失败：${res.data.msg}`)
-    }
-  } catch (err) {
-    if (err !== 'cancel') {
-      ElMessage.error(`删除失败：${err.response?.data?.msg || err.message}`)
-    } else {
-      ElMessage.info('已取消删除')
-    }
-  }
-}
+	if (!id) return;
+	try {
+		await ElMessageBox.confirm(
+			'确定删除该条数据？删除后不可恢复！',
+			'删除确认',
+			{
+				confirmButtonText: '确定',
+				cancelButtonText: '取消',
+				type: 'warning',
+			}
+		);
+		const res = await proxy.$axios.delete(`/data/delete/${id}`);
+		if (res.data.success) {
+			ElMessage.success('数据删除成功 🗑️');
+			getDataList(); // 刷新数据
+		} else {
+			ElMessage.error(`删除失败：${res.data.msg}`);
+		}
+	} catch (err) {
+		if (err !== 'cancel') {
+			ElMessage.error(
+				`删除失败：${err.response?.data?.msg || err.message}`
+			);
+		} else {
+			ElMessage.info('已取消删除');
+		}
+	}
+};
 
 // 7. 编辑数据（回显到表单）
 const editData = (row) => {
-  editId.value = row.id
-  // 回显字段值
-  fieldList.value.forEach(field => {
-    dataForm[field.fieldCode] = row[field.fieldCode] || ''
-  })
-  ElMessage.info('请在上方表单修改数据，完成后点击「保存修改」')
-}
+	editId.value = row.id;
+	// 回显字段值
+	fieldList.value.forEach((field) => {
+		dataForm[field.fieldCode] = row[field.fieldCode] || '';
+	});
+	ElMessage.info('请在上方表单修改数据，完成后点击「保存修改」');
+};
 
 // 8. 更新数据
 const updateData = async () => {
-  if (!editId.value) {
-    ElMessage.warning('请先选择要编辑的数据')
-    return
-  }
-  const currentTableCode = tableCode.value.trim()
-  if (!currentTableCode) {
-    ElMessage.warning('请输入业务表标识')
-    return
-  }
-  // 校验必填字段
-  let isEmpty = false
-  fieldList.value.forEach(field => {
-    if (field.isRequired === 1 && !dataForm[field.fieldCode]) {
-      ElMessage.warning(`${field.fieldName}为必填项`)
-      isEmpty = true
-    }
-  })
-  if (isEmpty) return
+	if (!editId.value) {
+		ElMessage.warning('请先选择要编辑的数据');
+		return;
+	}
+	const currentTableCode = tableCode.value.trim();
+	if (!currentTableCode) {
+		ElMessage.warning('请输入业务表标识');
+		return;
+	}
+	// 校验必填字段
+	let isEmpty = false;
+	fieldList.value.forEach((field) => {
+		if (field.isRequired === 1 && !dataForm[field.fieldCode]) {
+			ElMessage.warning(`${field.fieldName}为必填项`);
+			isEmpty = true;
+		}
+	});
+	if (isEmpty) return;
 
-  dataLoading.value = true
-  try {
-    const res = await proxy.$axios.put(`/data/update/${editId.value}`, {
-      tableCode: currentTableCode,
-      fieldValues: { ...dataForm }
-    })
-    if (res.data.success) {
-      ElMessage.success('数据修改成功 ✏️')
-      getDataList() // 刷新数据
-      resetForm()
-    } else {
-      ElMessage.error(`修改失败：${res.data.msg}`)
-    }
-  } catch (err) {
-    ElMessage.error(`修改失败：${err.response?.data?.msg || err.message}`)
-  } finally {
-    dataLoading.value = false
-  }
-}
+	dataLoading.value = true;
+	try {
+		const res = await proxy.$axios.put(`/data/update/${editId.value}`, {
+			tableCode: currentTableCode,
+			fieldValues: { ...dataForm },
+		});
+		if (res.data.success) {
+			ElMessage.success('数据修改成功 ✏️');
+			getDataList(); // 刷新数据
+			resetForm();
+		} else {
+			ElMessage.error(`修改失败：${res.data.msg}`);
+		}
+	} catch (err) {
+		ElMessage.error(`修改失败：${err.response?.data?.msg || err.message}`);
+	} finally {
+		dataLoading.value = false;
+	}
+};
 
 // 9. 重置表单
 const resetForm = () => {
-  editId.value = null
-  fieldList.value.forEach(field => {
-    delete dataForm[field.fieldCode]
-  })
-}
+	editId.value = null;
+	fieldList.value.forEach((field) => {
+		delete dataForm[field.fieldCode];
+	});
+};
 
 // 10. 导出数据到Excel
 const exportToExcel = () => {
-  if (dataList.value.length === 0) {
-    ElMessage.warning('暂无数据可导出')
-    return
-  }
+	if (dataList.value.length === 0) {
+		ElMessage.warning('暂无数据可导出');
+		return;
+	}
 
-  // 构建导出的表头和数据映射（字段编码 -> 字段名称）
-  const headerMap = {}
-  fieldList.value.forEach(field => {
-    headerMap[field.fieldCode] = field.fieldName
-  })
+	// 构建导出的表头和数据映射（字段编码 -> 字段名称）
+	const headerMap = {};
+	fieldList.value.forEach((field) => {
+		headerMap[field.fieldCode] = field.fieldName;
+	});
 
-  // 转换数据格式，将字段编码替换为字段名称
-  const exportData = dataList.value.map(row => {
-    const newRow = {}
-    Object.keys(row).forEach(key => {
-      if (headerMap[key]) {
-        newRow[headerMap[key]] = row[key]
-      }
-    })
-    return newRow
-  })
+	// 转换数据格式，将字段编码替换为字段名称
+	const exportData = dataList.value.map((row) => {
+		const newRow = {};
+		Object.keys(row).forEach((key) => {
+			if (headerMap[key]) {
+				newRow[headerMap[key]] = row[key];
+			}
+		});
+		return newRow;
+	});
 
-  // 创建工作簿和工作表
-  const worksheet = XLSX.utils.json_to_sheet(exportData)
-  const workbook = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(workbook, worksheet, '数据列表')
+	// 创建工作簿和工作表
+	const worksheet = XLSX.utils.json_to_sheet(exportData);
+	const workbook = XLSX.utils.book_new();
+	XLSX.utils.book_append_sheet(workbook, worksheet, '数据列表');
 
-  // 生成Excel文件并下载
-  const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })
-  const blob = new Blob([excelBuffer], { type: 'application/octet-stream' })
-  // 生成带时间戳的文件名
-  const fileName = `${tableCode.value}_数据_${new Date().toLocaleString().replace(/[/: ]/g, '-')}.xlsx`
-  saveAs(blob, fileName)
+	// 生成Excel文件并下载
+	const excelBuffer = XLSX.write(workbook, {
+		bookType: 'xlsx',
+		type: 'array',
+	});
+	const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+	// 生成带时间戳的文件名
+	const fileName = `${tableCode.value}_数据_${new Date()
+		.toLocaleString()
+		.replace(/[/: ]/g, '-')}.xlsx`;
+	saveAs(blob, fileName);
 
-  ElMessage.success('数据导出成功 🎉')
-}
+	ElMessage.success('数据导出成功 🎉');
+};
 
 // 页面加载后自动加载字段
-getFieldList()
+getFieldList();
+
+// 在原有的JavaScript代码后添加以下辅助方法
+const getFieldTypeTag = (type) => {
+	const tagMap = {
+		VARCHAR: 'primary',
+		INT: 'success',
+		BIGINT: 'warning',
+		DECIMAL: 'info',
+		DATE: 'success',
+		DATETIME: 'warning',
+		TIMESTAMP: 'danger',
+		BOOLEAN: 'primary',
+		TEXT: 'info',
+	};
+	return tagMap[type] || 'info';
+};
+
+const formatCellValue = (value, type) => {
+	if (value === null || value === undefined) return '-';
+
+	switch (type) {
+		case 'BOOLEAN':
+			return value === 'true' ? '是' : '否';
+		case 'DATE':
+		case 'DATETIME':
+		case 'TIMESTAMP':
+			return new Date(value).toLocaleString();
+		default:
+			return value;
+	}
+};
+
+const tableRowClassName = ({ rowIndex }) => {
+	return rowIndex % 2 === 1 ? 'even-row' : '';
+};
 </script>
 
 <style scoped>
-/* 全局容器 - 现代简约底色 */
+/* 整体布局 */
 .app-container {
-  width: 95%;
-  margin: 0 auto;
-  padding: 24px 0;
-  background-color: #f9fafb;
-  min-height: 100vh;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+	width: 98%;
+	margin: 0 auto;
+	padding: 10px 0; /* 缩小整体内边距，更紧凑 */
+	background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+	min-height: 100vh;
+	font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+		'Helvetica Neue', Arial, sans-serif;
 }
 
-/* 头部容器 */
+/* 头部样式 */
 .header-container {
-  margin-bottom: 24px;
-}
-.page-header {
-  --el-page-header-text-color: #1f2937;
-  --el-page-header-font-size: 22px;
-  --el-page-header-content-font-weight: 600;
+	margin-bottom: 10px; /* 缩小底部间距 */
+	text-align: center;
+	padding: 10px 0; /* 缩小内边距 */
 }
 
-/* 卡片通用样式 - 轻量阴影+圆角 */
+.header-content {
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	padding: 20px 10px; /* 缩小内边距 */
+	border-radius: 10px;
+	color: white;
+	box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+}
+
+.page-title {
+	font-size: 32px;
+	font-weight: 700;
+	margin-bottom: 10px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+}
+
+.icon-title {
+	font-size: 36px;
+}
+
+.page-subtitle {
+	font-size: 16px;
+	opacity: 0.9;
+	font-weight: 400;
+}
+
+/* 卡片通用样式 */
 .card-wrapper {
-  margin-bottom: 24px;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  border: none;
-  background-color: #ffffff;
-  overflow: hidden;
+	margin-bottom: 15px; /* 缩小卡片间距 */
+	border-radius: 10px;
+	border: none;
+	background: white;
+	overflow: hidden;
+	transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-wrapper:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+	padding: 15px 24px 0; /* 缩小内边距 */
+	margin-bottom: 15px; /* 缩小底部间距 */
+}
+
+.card-title {
+	font-size: 20px;
+	font-weight: 600;
+	color: #2d3748;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.icon-card {
+	color: #667eea;
+	font-size: 22px;
+}
+
+.field-count {
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	color: white;
+	padding: 2px 10px;
+	border-radius: 20px;
+	font-size: 12px;
+	margin-left: 10px;
 }
 
 /* 业务表标识卡片 */
 .table-code-card {
-  padding: 20px 24px;
+	padding: 20px; /* 缩小内边距 */
 }
+
+.table-code-wrapper {
+	display: flex;
+	gap: 15px;
+	align-items: center;
+}
+
 .table-code-input {
-  width: 320px;
-  margin-right: 16px;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  transition: all 0.2s ease;
+	flex: 1;
+	border-radius: 12px;
+	border: 2px solid #e2e8f0;
+	transition: all 0.3s ease;
 }
-.table-code-input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+
+.table-code-input:hover,
+.table-code-input:focus-within {
+	border-color: #667eea;
+	box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
+
 .btn-refresh {
-  height: 40px;
-  border-radius: 8px;
-  font-weight: 500;
-  background-color: #3b82f6;
-  border-color: #3b82f6;
+	border-radius: 12px;
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	border: none;
+	padding: 0 24px;
+	font-weight: 500;
+	transition: all 0.3s ease;
 }
+
 .btn-refresh:hover {
-  background-color: #2563eb;
-  border-color: #2563eb;
+	transform: translateY(-2px);
+	box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
 }
 
-/* 表单通用样式 */
-.form-item {
-  margin-bottom: 16px;
-}
-.form-item .el-form-item__label {
-  color: #374151;
-  font-weight: 500;
-  font-size: 14px;
-}
-.form-input, .form-select {
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  transition: all 0.2s ease;
-}
-.form-input:focus, .form-select:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+.table-tips {
+	margin-top: 12px;
+	font-size: 13px;
+	color: #718096;
+	display: flex;
+	align-items: center;
+	gap: 8px;
 }
 
-/* 字段表单 */
-.field-form {
-  padding: 8px 0 24px 0;
-  border-bottom: 1px solid #f3f4f6;
-  margin-bottom: 24px;
+/* 字段添加区域 */
+.field-add-section {
+	background: #f8fafc;
+	border-radius: 12px;
+	padding: 15px; /* 缩小内边距 */
+	margin-bottom: 16px; /* 缩小底部间距 */
 }
 
-/* 列表容器 */
+.section-title {
+	font-size: 16px;
+	font-weight: 600;
+	color: #2d3748;
+	margin-bottom: 15px; /* 缩小底部间距 */
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.form-row {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+	gap: 15px; /* 缩小间距 */
+	align-items: end;
+}
+
+.form-item.enhanced {
+	margin-bottom: 0;
+}
+
+.form-item.enhanced :deep(.el-form-item__label) {
+	font-weight: 600;
+	color: #4a5568;
+	font-size: 14px;
+}
+
+.form-input-enhanced,
+.form-select-enhanced {
+	width: 100%;
+	border-radius: 10px;
+	border: 2px solid #e2e8f0;
+	transition: all 0.3s ease;
+}
+
+.form-input-enhanced:hover,
+.form-select-enhanced:hover,
+.form-input-enhanced:focus-within,
+.form-select-enhanced:focus-within {
+	border-color: #667eea;
+	box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.input-icon {
+	color: #a0aec0;
+}
+
+.btn-add-enhanced {
+	background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+	border: none;
+	border-radius: 10px;
+	padding: 0 28px;
+	height: 40px;
+	font-weight: 500;
+	transition: all 0.3s ease;
+}
+
+.btn-add-enhanced:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+}
+
+/* 列表区域 */
 .list-container {
-  margin-top: 20px;
-  padding: 0 4px 20px 4px;
+	margin-top: 15px; /* 缩小顶部间距 */
 }
+
 .list-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 15px; /* 缩小底部间距 */
+	padding: 0 4px;
 }
+
+.list-header-left {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
 .list-title {
-  font-size: 16px;
-  color: #1f2937;
-  margin: 0 0 16px 0;
-  font-weight: 600;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #f3f4f6;
+	font-size: 18px;
+	font-weight: 600;
+	color: #2d3748;
+	margin: 0;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.list-subtitle {
+	font-size: 13px;
+	color: #718096;
 }
 
 /* 表格样式 */
-.data-table {
-  --el-table-header-text-color: #1f2937;
-  --el-table-row-hover-bg-color: #f9fafb;
-  --el-table-header-text-color: #374151;
-  border-radius: 8px;
-  overflow: hidden;
-}
-.data-table .el-table__header {
-  background-color: #f9fafb;
-}
-.data-table .el-table__cell {
-  padding: 12px 0;
+.data-table-enhanced {
+	border-radius: 10px;
+	overflow: hidden;
+	border: 1px solid #e2e8f0;
 }
 
-/* 按钮样式 - 现代扁平化 */
-.btn-add {
-  background-color: #10b981;
-  border-color: #10b981;
-  border-radius: 8px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-.btn-add:hover {
-  background-color: #059669;
-  border-color: #059669;
+.data-table-enhanced :deep(.el-table__header) {
+	border-radius: 12px 12px 0 0;
 }
 
-.btn-update {
-  background-color: #f59e0b;
-  border-color: #f59e0b;
-  border-radius: 8px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-.btn-update:hover {
-  background-color: #d97706;
-  border-color: #d97706;
+.data-table-enhanced :deep(.el-table__row) {
+	transition: background-color 0.3s ease;
 }
 
-.btn-refresh-data {
-  background-color: #6366f1;
-  border-color: #6366f1;
-  border-radius: 8px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-.btn-refresh-data:hover {
-  background-color: #4f46e5;
-  border-color: #4f46e5;
+.data-table-enhanced :deep(.el-table__row:hover) {
+	background-color: #f7fafc;
 }
 
-.btn-reset {
-  background-color: #6b7280;
-  border-color: #6b7280;
-  border-radius: 8px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-.btn-reset:hover {
-  background-color: #4b5563;
-  border-color: #4b5563;
+.data-table-enhanced :deep(.el-table__cell) {
+	padding: 12px 0; /* 缩小单元格内边距 */
+	border-color: #e2e8f0;
 }
 
-.btn-export {
-  background-color: #3b82f6;
-  border-color: #3b82f6;
-  border-radius: 8px;
-  font-weight: 500;
-}
-.btn-export:hover {
-  background-color: #2563eb;
-  border-color: #2563eb;
+.column-header {
+	display: flex;
+	align-items: center;
+	gap: 6px;
 }
 
-.btn-sm-delete {
-  border-radius: 6px;
-  font-size: 12px;
+.cell-content {
+	color: #4a5568;
+	font-size: 14px;
 }
 
-.btn-edit {
-  color: #f59e0b;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-.btn-edit:hover {
-  background-color: #fffbeb;
-  color: #d97706;
-  border-radius: 6px;
-}
-
-.btn-delete {
-  color: #ef4444;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-.btn-delete:hover {
-  background-color: #fef2f2;
-  color: #dc2626;
-  border-radius: 6px;
+/* 操作按钮 */
+.btn-sm-delete-enhanced {
+	background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+	border: none;
+	color: white;
+	transition: all 0.3s ease;
+	border-radius: 8px; /* 添加圆角 */
+	padding: 0 10px; /* 调整内边距 */
 }
 
-/* 数据表单 */
-.data-form {
-  padding: 8px 0 24px 0;
-  border-bottom: 1px solid #f3f4f6;
-  margin-bottom: 24px;
+.btn-sm-delete-enhanced:hover {
+	transform: scale(1.05); /* 微调 hover 缩放效果 */
+	box-shadow: 0 3px 10px rgba(245, 101, 101, 0.3);
 }
 
-/* 空状态容器 */
-.empty-container {
-  padding: 40px 0;
+/* 数据表单区域 */
+.data-form-section {
+	background: #f8fafc;
+	border-radius: 12px;
+	padding: 18px; /* 缩小内边距 */
+	margin-bottom: 20px; /* 缩小底部间距 */
 }
 
-/* 适配小屏幕 */
+.form-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+	gap: 15px; /* 缩小间距 */
+	margin-bottom: 20px; /* 缩小底部间距 */
+}
+
+.form-grid-item {
+	background: white;
+	border-radius: 10px;
+	padding: 14px; /* 缩小内边距 */
+	border: 1px solid #e2e8f0;
+	transition: all 0.3s ease;
+}
+
+.form-grid-item:hover {
+	border-color: #667eea;
+	box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.field-label {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	margin-bottom: 6px; /* 缩小底部间距 */
+}
+
+.label-text {
+	font-weight: 600;
+	color: #4a5568;
+	font-size: 14px;
+}
+
+.required-mark {
+	color: #f56565;
+}
+
+.form-control-enhanced {
+	width: 100%;
+	border-radius: 8px;
+}
+
+.form-actions {
+	display: flex;
+	gap: 10px; /* 缩小按钮间距 */
+	flex-wrap: wrap;
+	padding-top: 15px; /* 缩小顶部内边距 */
+	border-top: 1px solid #e2e8f0;
+}
+
+.btn-action-primary,
+.btn-action-warning,
+.btn-action-success,
+.btn-action-info {
+	border-radius: 10px;
+	padding: 0 20px; /* 缩小按钮内边距 */
+	font-weight: 500;
+	transition: all 0.3s ease;
+	border: none;
+}
+
+.btn-action-primary {
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.btn-action-warning {
+	background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.btn-action-success {
+	background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.btn-action-info {
+	background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+}
+
+.btn-action-primary:hover,
+.btn-action-warning:hover,
+.btn-action-success:hover,
+.btn-action-info:hover {
+	transform: translateY(-2px);
+	opacity: 0.95;
+}
+
+/* 数据操作按钮 */
+.btn-action-edit {
+	background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+	border: none;
+	color: white;
+	border-radius: 8px;
+	transition: all 0.3s ease;
+	margin-right: 5px; /* 缩小按钮间距 */
+}
+
+.btn-action-delete {
+	background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+	border: none;
+	color: white;
+	border-radius: 8px;
+	transition: all 0.3s ease;
+}
+
+.btn-action-edit:hover,
+.btn-action-delete:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* 导出按钮 */
+.btn-export-enhanced {
+	background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+	border: none;
+	border-radius: 10px;
+	color: white;
+	font-weight: 500;
+	transition: all 0.3s ease;
+}
+
+.btn-export-enhanced:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 5px 15px rgba(66, 153, 225, 0.3);
+}
+
+/* 空状态 */
+.empty-state {
+	padding: 30px 0; /* 缩小内边距 */
+}
+
+.empty-icon {
+	font-size: 80px;
+	color: #a0aec0;
+}
+
+.empty-tip {
+	color: #718096;
+	font-size: 14px;
+	margin-top: 10px;
+}
+
+/* 表格底部 */
+.table-footer {
+	margin-top: 15px; /* 缩小顶部间距 */
+	padding: 14px; /* 缩小内边距 */
+	background: #f8fafc;
+	border-radius: 10px;
+	display: flex;
+	justify-content: flex-end;
+}
+
+.summary-info {
+	color: #718096;
+	font-size: 14px;
+}
+
+.highlight {
+	color: #667eea;
+	font-weight: 600;
+}
+
+/* 页脚提示 */
+.footer-tips {
+	text-align: center;
+	padding: 15px; /* 缩小内边距 */
+	color: #718096;
+	font-size: 14px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	margin-top: 20px; /* 缩小顶部间距 */
+}
+
+/* 响应式设计 */
 @media (max-width: 1200px) {
-  .table-code-input {
-    width: 220px;
-  }
-  .form-item {
-    margin-bottom: 12px;
-  }
+	.form-grid {
+		grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	}
+}
+
+@media (max-width: 992px) {
+	.form-row {
+		grid-template-columns: 1fr;
+	}
+
+	.form-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.list-header {
+		flex-direction: column;
+		gap: 10px; /* 缩小间距 */
+		align-items: stretch;
+	}
+
+	.form-actions {
+		justify-content: center;
+	}
+}
+
+@media (max-width: 768px) {
+	.app-container {
+		width: 100%;
+		padding: 8px; /* 缩小内边距 */
+	}
+
+	.header-content {
+		padding: 20px 15px; /* 缩小内边距 */
+	}
+
+	.page-title {
+		font-size: 24px;
+	}
+
+	.card-header {
+		padding: 10px 15px 0; /* 缩小内边距 */
+	}
+
+	.table-code-wrapper {
+		flex-direction: column;
+	}
+
+	.table-code-input {
+		width: 100%;
+	}
+
+	.btn-refresh {
+		width: 100%;
+	}
 }
 </style>
