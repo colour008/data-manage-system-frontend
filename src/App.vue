@@ -25,7 +25,7 @@
 				<div class="table-code-wrapper">
 					<el-input
 						v-model="tableCode"
-						placeholder="请输入业务表标识（如：user_data）"
+						placeholder="请输入（如：user_data）"
 						class="table-code-input"
 						size="large">
 						<template #prefix>
@@ -1285,10 +1285,19 @@ const tableRowClassName = ({ rowIndex }) => {
 	font-size: 14px;
 }
 
+/* 针对业务表管理区的输入框 */
+:deep(.table-code-input .el-input__inner::placeholder) {
+	color: #9b9b9b !important;
+	font-size: 11px !important;
+	opacity: 1 !important;
+	font-weight: 300 !important;
+	font-style: italic;
+}
+
 /* 针对数据管理区的输入框 */
 :deep(.form-control-enhanced .el-input__inner::placeholder) {
 	color: #9b9b9b !important;
-	font-size: 13px !important;
+	font-size: 11px !important;
 	opacity: 1 !important;
 	font-weight: 300 !important;
 	font-style: italic;
@@ -1297,14 +1306,14 @@ const tableRowClassName = ({ rowIndex }) => {
 /* 针对字段配置区的输入框 */
 :deep(.form-input-enhanced .el-input__inner::placeholder) {
 	color: #9b9b9b !important;
-	font-size: 13px !important;
+	font-size: 11px !important;
 	opacity: 1 !important;
 	font-weight: 300 !important;
 	font-style: italic;
 }
 
 :deep(.el-form-item__content .el-select--large .el-select__wrapper) {
-	font-size: 12px !important;
+	font-size: 10px !important;
 }
 
 /* 响应式设计 */
