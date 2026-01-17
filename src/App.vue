@@ -7,7 +7,6 @@
 					<i class="icon-title el-icon-s-data"></i>
 					动态数据管理系统
 				</h1>
-				<p class="page-subtitle">灵活配置字段，动态管理数据</p>
 			</div>
 		</div>
 
@@ -42,10 +41,6 @@
 						加载字段
 					</el-button>
 				</div>
-				<div class="table-tips">
-					<i class="el-icon-info"></i>
-					输入或修改业务表标识后，点击加载字段进行配置
-				</div>
 			</el-form-item>
 		</el-card>
 
@@ -56,7 +51,7 @@
 					<i class="icon-card el-icon-setting"></i>
 					字段配置
 					<span class="field-count" v-if="fieldList.length > 0">
-						({{ fieldList.length }}个字段)
+						【已配置{{ fieldList.length }}个字段】
 					</span>
 				</h3>
 			</div>
@@ -151,19 +146,16 @@
 						<i class="el-icon-tickets"></i>
 						已配置字段列表
 					</h4>
-					<span class="list-subtitle">点击删除可移除字段</span>
 				</div>
 				<el-table
 					:data="fieldList"
-					border
 					style="width: 100%"
 					v-loading="fieldLoading"
 					class="data-table-enhanced"
 					:header-cell-style="{
-						background:
-							'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+						background: '#667eea',
 						color: 'white',
-						fontWeight: '600',
+						fontWeight: '500',
 						fontSize: '14px',
 					}">
 					<el-table-column
@@ -254,7 +246,7 @@
 					<i class="icon-card el-icon-s-data"></i>
 					数据管理
 					<span class="field-count" v-if="dataList.length > 0">
-						({{ dataList.length }}条记录)
+						【已添加{{ dataList.length }}条记录】
 					</span>
 				</h3>
 			</div>
@@ -402,9 +394,6 @@
 								<i class="el-icon-s-order"></i>
 								数据列表
 							</h4>
-							<span class="list-subtitle"
-								>支持编辑和删除操作</span
-							>
 						</div>
 						<div class="list-header-right">
 							<el-button
@@ -418,16 +407,14 @@
 					</div>
 					<el-table
 						:data="dataList"
-						border
 						style="width: 100%"
 						v-loading="dataLoading"
 						class="data-table-enhanced"
 						:row-class-name="tableRowClassName"
 						:header-cell-style="{
-							background:
-								'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+							background: '#667eea',
 							color: 'white',
-							fontWeight: '600',
+							fontWeight: '500',
 							fontSize: '14px',
 						}">
 						<el-table-column
@@ -441,7 +428,7 @@
 									{{
 										formatCellValue(
 											scope.row[field.fieldCode],
-											field.fieldType
+											field.fieldType,
 										)
 									}}
 								</span>
@@ -583,7 +570,7 @@ const getFieldList = async () => {
 		if (res.data.success) {
 			fieldList.value = res.data.data || [];
 			ElMessage.success(
-				`字段加载成功 📝（共${fieldList.value.length}个字段）`
+				`字段加载成功 📝（共${fieldList.value.length}个字段）`,
 			);
 			// 加载字段后自动加载数据
 			getDataList();
@@ -609,7 +596,7 @@ const deleteField = async (fieldId) => {
 				confirmButtonText: '确定',
 				cancelButtonText: '取消',
 				type: 'warning',
-			}
+			},
 		);
 		const res = await proxy.$axios.delete(`/field/delete/${fieldId}`);
 		if (res.data.success) {
@@ -621,7 +608,7 @@ const deleteField = async (fieldId) => {
 	} catch (err) {
 		if (err !== 'cancel') {
 			ElMessage.error(
-				`删除失败：${err.response?.data?.msg || err.message}`
+				`删除失败：${err.response?.data?.msg || err.message}`,
 			);
 		} else {
 			ElMessage.info('已取消删除');
@@ -686,7 +673,7 @@ const getDataList = async () => {
 		if (res.data.success) {
 			dataList.value = res.data.data || [];
 			ElMessage.success(
-				`数据加载成功 📊（共${dataList.value.length}条数据）`
+				`数据加载成功 📊（共${dataList.value.length}条数据）`,
 			);
 		} else {
 			ElMessage.error(`加载失败：${res.data.msg}`);
@@ -709,7 +696,7 @@ const deleteData = async (id) => {
 				confirmButtonText: '确定',
 				cancelButtonText: '取消',
 				type: 'warning',
-			}
+			},
 		);
 		const res = await proxy.$axios.delete(`/data/delete/${id}`);
 		if (res.data.success) {
@@ -721,7 +708,7 @@ const deleteData = async (id) => {
 	} catch (err) {
 		if (err !== 'cancel') {
 			ElMessage.error(
-				`删除失败：${err.response?.data?.msg || err.message}`
+				`删除失败：${err.response?.data?.msg || err.message}`,
 			);
 		} else {
 			ElMessage.info('已取消删除');
@@ -877,39 +864,42 @@ const tableRowClassName = ({ rowIndex }) => {
 	width: 98%;
 	margin: 0 auto;
 	padding: 10px 0; /* 缩小整体内边距，更紧凑 */
-	background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+	/* background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%); */
 	min-height: 100vh;
-	font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-		'Helvetica Neue', Arial, sans-serif;
+	font-family:
+		'Inter',
+		-apple-system,
+		BlinkMacSystemFont,
+		'Segoe UI',
+		Roboto,
+		'Helvetica Neue',
+		Arial,
+		sans-serif;
 }
 
 /* 头部样式 */
 .header-container {
 	margin-bottom: 10px; /* 缩小底部间距 */
 	text-align: center;
-	padding: 10px 0; /* 缩小内边距 */
 }
 
 .header-content {
-	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-	padding: 20px 10px; /* 缩小内边距 */
-	border-radius: 10px;
+	background: #667eea;
+	padding: 3px; /* 缩小内边距 */
 	color: white;
 	box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
 }
 
 .page-title {
-	font-size: 32px;
-	font-weight: 700;
-	margin-bottom: 10px;
+	font-size: 24px;
+	font-weight: 500;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	gap: 12px;
 }
 
 .icon-title {
-	font-size: 36px;
+	font-size: 28px;
 }
 
 .page-subtitle {
@@ -920,12 +910,14 @@ const tableRowClassName = ({ rowIndex }) => {
 
 /* 卡片通用样式 */
 .card-wrapper {
-	margin-bottom: 15px; /* 缩小卡片间距 */
-	border-radius: 10px;
+	margin-bottom: 10px; /* 缩小卡片间距 */
 	border: none;
 	background: white;
 	overflow: hidden;
-	transition: transform 0.3s ease, box-shadow 0.3s ease;
+	transition:
+		transform 0.3s ease,
+		box-shadow 0.3s ease;
+	box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
 }
 
 .card-wrapper:hover {
@@ -934,17 +926,16 @@ const tableRowClassName = ({ rowIndex }) => {
 }
 
 .card-header {
-	padding: 15px 24px 0; /* 缩小内边距 */
-	margin-bottom: 15px; /* 缩小底部间距 */
+	padding: 0px 10px; /* 缩小内边距 */
+	margin-bottom: 5px; /* 缩小底部间距 */
+	border: 1px solid #e2e8f0;
 }
 
 .card-title {
-	font-size: 20px;
-	font-weight: 600;
+	font-size: 18px;
+	font-weight: 500;
 	color: #2d3748;
 	display: flex;
-	align-items: center;
-	gap: 10px;
 }
 
 .icon-card {
@@ -953,29 +944,21 @@ const tableRowClassName = ({ rowIndex }) => {
 }
 
 .field-count {
-	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-	color: white;
-	padding: 2px 10px;
-	border-radius: 20px;
-	font-size: 12px;
-	margin-left: 10px;
+	color: rgb(202, 52, 52);
+	font-size: 17px;
+	margin-left: 6px;
 }
 
 /* 业务表标识卡片 */
-.table-code-card {
-	padding: 20px; /* 缩小内边距 */
-}
 
 .table-code-wrapper {
 	display: flex;
-	gap: 15px;
+	gap: 10px;
 	align-items: center;
 }
 
 .table-code-input {
 	flex: 1;
-	border-radius: 12px;
-	border: 2px solid #e2e8f0;
 	transition: all 0.3s ease;
 }
 
@@ -986,11 +969,10 @@ const tableRowClassName = ({ rowIndex }) => {
 }
 
 .btn-refresh {
-	border-radius: 12px;
-	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	background: #667eea;
 	border: none;
 	padding: 0 24px;
-	font-weight: 500;
+	font-weight: 300;
 	transition: all 0.3s ease;
 }
 
@@ -999,31 +981,21 @@ const tableRowClassName = ({ rowIndex }) => {
 	box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
 }
 
-.table-tips {
-	margin-top: 12px;
-	font-size: 13px;
-	color: #718096;
-	display: flex;
-	align-items: center;
-	gap: 8px;
-}
-
 /* 字段添加区域 */
 .field-add-section {
 	background: #f8fafc;
-	border-radius: 12px;
-	padding: 15px; /* 缩小内边距 */
+	padding: 5px 15px; /* 缩小内边距 */
 	margin-bottom: 16px; /* 缩小底部间距 */
+	border: 1px solid #e2e8f0;
 }
 
 .section-title {
 	font-size: 16px;
-	font-weight: 600;
+	font-weight: 500;
 	color: #2d3748;
 	margin-bottom: 15px; /* 缩小底部间距 */
 	display: flex;
 	align-items: center;
-	gap: 8px;
 }
 
 .form-row {
@@ -1038,7 +1010,7 @@ const tableRowClassName = ({ rowIndex }) => {
 }
 
 .form-item.enhanced :deep(.el-form-item__label) {
-	font-weight: 600;
+	font-weight: 500;
 	color: #4a5568;
 	font-size: 14px;
 }
@@ -1046,8 +1018,6 @@ const tableRowClassName = ({ rowIndex }) => {
 .form-input-enhanced,
 .form-select-enhanced {
 	width: 100%;
-	border-radius: 10px;
-	border: 2px solid #e2e8f0;
 	transition: all 0.3s ease;
 }
 
@@ -1066,10 +1036,9 @@ const tableRowClassName = ({ rowIndex }) => {
 .btn-add-enhanced {
 	background: linear-gradient(135deg, #10b981 0%, #059669 100%);
 	border: none;
-	border-radius: 10px;
 	padding: 0 28px;
 	height: 40px;
-	font-weight: 500;
+	font-weight: 300;
 	transition: all 0.3s ease;
 }
 
@@ -1099,28 +1068,15 @@ const tableRowClassName = ({ rowIndex }) => {
 
 .list-title {
 	font-size: 18px;
-	font-weight: 600;
+	font-weight: 500;
 	color: #2d3748;
 	margin: 0;
 	display: flex;
-	align-items: center;
-	gap: 8px;
-}
-
-.list-subtitle {
-	font-size: 13px;
-	color: #718096;
 }
 
 /* 表格样式 */
 .data-table-enhanced {
-	border-radius: 10px;
 	overflow: hidden;
-	border: 1px solid #e2e8f0;
-}
-
-.data-table-enhanced :deep(.el-table__header) {
-	border-radius: 12px 12px 0 0;
 }
 
 .data-table-enhanced :deep(.el-table__row) {
@@ -1132,14 +1088,13 @@ const tableRowClassName = ({ rowIndex }) => {
 }
 
 .data-table-enhanced :deep(.el-table__cell) {
-	padding: 12px 0; /* 缩小单元格内边距 */
+	padding: 10px 0; /* 缩小单元格内边距 */
 	border-color: #e2e8f0;
 }
 
 .column-header {
 	display: flex;
 	align-items: center;
-	gap: 6px;
 }
 
 .cell-content {
@@ -1153,7 +1108,6 @@ const tableRowClassName = ({ rowIndex }) => {
 	border: none;
 	color: white;
 	transition: all 0.3s ease;
-	border-radius: 8px; /* 添加圆角 */
 	padding: 0 10px; /* 调整内边距 */
 }
 
@@ -1165,9 +1119,9 @@ const tableRowClassName = ({ rowIndex }) => {
 /* 数据表单区域 */
 .data-form-section {
 	background: #f8fafc;
-	border-radius: 12px;
-	padding: 18px; /* 缩小内边距 */
+	padding: 10px; /* 缩小内边距 */
 	margin-bottom: 20px; /* 缩小底部间距 */
+	border: 1px solid #e2e8f0;
 }
 
 .form-grid {
@@ -1179,7 +1133,6 @@ const tableRowClassName = ({ rowIndex }) => {
 
 .form-grid-item {
 	background: white;
-	border-radius: 10px;
 	padding: 14px; /* 缩小内边距 */
 	border: 1px solid #e2e8f0;
 	transition: all 0.3s ease;
@@ -1198,7 +1151,7 @@ const tableRowClassName = ({ rowIndex }) => {
 }
 
 .label-text {
-	font-weight: 600;
+	font-weight: 500;
 	color: #4a5568;
 	font-size: 14px;
 }
@@ -1209,7 +1162,6 @@ const tableRowClassName = ({ rowIndex }) => {
 
 .form-control-enhanced {
 	width: 100%;
-	border-radius: 8px;
 }
 
 .form-actions {
@@ -1224,11 +1176,11 @@ const tableRowClassName = ({ rowIndex }) => {
 .btn-action-warning,
 .btn-action-success,
 .btn-action-info {
-	border-radius: 10px;
 	padding: 0 20px; /* 缩小按钮内边距 */
-	font-weight: 500;
+	font-weight: 300;
 	transition: all 0.3s ease;
 	border: none;
+	color: #ffffff;
 }
 
 .btn-action-primary {
@@ -1244,7 +1196,7 @@ const tableRowClassName = ({ rowIndex }) => {
 }
 
 .btn-action-info {
-	background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+	background: linear-gradient(135deg, #718096 0%, #404e67 100%);
 }
 
 .btn-action-primary:hover,
@@ -1260,7 +1212,6 @@ const tableRowClassName = ({ rowIndex }) => {
 	background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
 	border: none;
 	color: white;
-	border-radius: 8px;
 	transition: all 0.3s ease;
 	margin-right: 5px; /* 缩小按钮间距 */
 }
@@ -1269,7 +1220,6 @@ const tableRowClassName = ({ rowIndex }) => {
 	background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
 	border: none;
 	color: white;
-	border-radius: 8px;
 	transition: all 0.3s ease;
 }
 
@@ -1283,7 +1233,6 @@ const tableRowClassName = ({ rowIndex }) => {
 .btn-export-enhanced {
 	background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
 	border: none;
-	border-radius: 10px;
 	color: white;
 	font-weight: 500;
 	transition: all 0.3s ease;
@@ -1315,7 +1264,6 @@ const tableRowClassName = ({ rowIndex }) => {
 	margin-top: 15px; /* 缩小顶部间距 */
 	padding: 14px; /* 缩小内边距 */
 	background: #f8fafc;
-	border-radius: 10px;
 	display: flex;
 	justify-content: flex-end;
 }
@@ -1327,20 +1275,36 @@ const tableRowClassName = ({ rowIndex }) => {
 
 .highlight {
 	color: #667eea;
-	font-weight: 600;
+	font-weight: 500;
 }
 
 /* 页脚提示 */
 .footer-tips {
-	text-align: center;
-	padding: 15px; /* 缩小内边距 */
-	color: #718096;
+	padding: 10px; /* 缩小内边距 */
+	color: #cb2d2d;
 	font-size: 14px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 8px;
-	margin-top: 20px; /* 缩小顶部间距 */
+}
+
+/* 针对数据管理区的输入框 */
+:deep(.form-control-enhanced .el-input__inner::placeholder) {
+	color: #9b9b9b !important;
+	font-size: 13px !important;
+	opacity: 1 !important;
+	font-weight: 300 !important;
+	font-style: italic;
+}
+
+/* 针对字段配置区的输入框 */
+:deep(.form-input-enhanced .el-input__inner::placeholder) {
+	color: #9b9b9b !important;
+	font-size: 13px !important;
+	opacity: 1 !important;
+	font-weight: 300 !important;
+	font-style: italic;
+}
+
+:deep(.el-form-item__content .el-select--large .el-select__wrapper) {
+	font-size: 12px !important;
 }
 
 /* 响应式设计 */
